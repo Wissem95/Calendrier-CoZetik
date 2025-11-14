@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useMemo } from 'react';
-import { format, addDays, startOfWeek, addWeeks, getWeek, startOfDay, startOfMonth, addMonths, subMonths, startOfYear, endOfYear, eachDayOfInterval, getDay } from 'date-fns';
+import { format, addDays, startOfWeek, addWeeks, getWeek, startOfDay, startOfMonth, endOfMonth, addMonths, subMonths, startOfYear, endOfYear, eachDayOfInterval, eachWeekOfInterval, getDay } from 'date-fns';
 import { fr } from 'date-fns/locale';
 import { X, CheckSquare, Square, Trash2, Save, Calendar as CalendarIcon, ChevronLeft, ChevronRight, Repeat } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
@@ -54,12 +54,17 @@ export function DaySelectionModal({ memberId, memberName, initialDate, isOpen, o
 
   const weeks = useMemo<WeekInfo[]>(() => {
     const monthStart = startOfMonth(currentMonth);
-    const firstWeekStart = startOfWeek(monthStart, { weekStartsOn: 1, locale: fr });
-    
-    return Array.from({ length: 4 }, (_, weekIndex) => {
-      const weekStart = addWeeks(firstWeekStart, weekIndex);
+    const monthEnd = endOfMonth(currentMonth);
+
+    // Récupérer toutes les semaines qui touchent le mois (de 4 à 6 semaines)
+    const weeksInMonth = eachWeekOfInterval(
+      { start: monthStart, end: monthEnd },
+      { weekStartsOn: 1, locale: fr }
+    );
+
+    return weeksInMonth.map((weekStart) => {
       const weekNumber = getWeek(weekStart, { weekStartsOn: 1, locale: fr });
-      
+
       const days: DayInfo[] = Array.from({ length: 7 }, (_, dayIndex) => {
         const date = addDays(weekStart, dayIndex);
         const targetDate = startOfDay(date);
@@ -81,7 +86,7 @@ export function DaySelectionModal({ memberId, memberName, initialDate, isOpen, o
           isInitialDay: startOfDay(date).getTime() === startOfDay(initialDate).getTime(),
         };
       });
-      
+
       return { number: weekNumber, start: weekStart, days };
     });
   }, [currentMonth, memberId, events, initialDate]);
@@ -261,7 +266,7 @@ export function DaySelectionModal({ memberId, memberName, initialDate, isOpen, o
             </div>
             <div className="text-center order-1 sm:order-2">
               <div className="font-semibold text-base sm:text-lg">{format(currentMonth, 'MMMM yyyy', { locale: fr })}</div>
-              <div className="text-xs text-gray-500">4 semaines affichées</div>
+              <div className="text-xs text-gray-500">{weeks.length} semaine{weeks.length > 1 ? 's' : ''} affichée{weeks.length > 1 ? 's' : ''}</div>
             </div>
           </div>
 
@@ -315,7 +320,7 @@ export function DaySelectionModal({ memberId, memberName, initialDate, isOpen, o
             <div className="flex flex-col sm:flex-row gap-2 sm:items-center justify-between">
               <div className="flex flex-wrap gap-2 items-center">
                 <Button type="button" variant="outline" size="sm" onClick={selectAll} disabled={isLoading} className="text-xs">
-                  Tout (4 sem.)
+                  Tout ({weeks.length} sem.)
                 </Button>
                 <div className="flex items-center gap-1 border rounded-md bg-white flex-1 sm:flex-none">
                   <select value={selectedYear} onChange={(e) => setSelectedYear(Number(e.target.value))} disabled={isLoading} className="px-2 py-1 text-xs sm:text-sm border-0 bg-transparent outline-none">

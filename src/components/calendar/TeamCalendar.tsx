@@ -23,7 +23,7 @@ import {
   subWeeks,
   isToday,
   getWeek,
-  getYear,
+  getWeekYear,
 } from 'date-fns';
 import { fr } from 'date-fns/locale';
 import { useCalendarStore } from '@/lib/store';
@@ -80,7 +80,10 @@ export function TeamCalendar() {
     [weekStart]
   );
 
-  const year = useMemo(() => getYear(weekStart), [weekStart]);
+  const year = useMemo(
+    () => getWeekYear(weekStart, { weekStartsOn: 1, locale: fr }),
+    [weekStart]
+  );
 
   // ========== Handlers de navigation ==========
   const handlePreviousWeek = () => {

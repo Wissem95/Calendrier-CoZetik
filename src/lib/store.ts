@@ -21,7 +21,7 @@ import {
   startOfDay,
   endOfDay,
   getWeek,
-  getYear,
+  getWeekYear,
 } from 'date-fns';
 import { fr } from 'date-fns/locale';
 
@@ -401,7 +401,7 @@ export const useCalendarStore = create<CalendarStore>()((set, get) => ({
 
     const summary: WeekSummary = {
       weekNumber: getWeek(weekStart, { weekStartsOn: 1, locale: fr }),
-      year: getYear(weekStart),
+      year: getWeekYear(weekStart, { weekStartsOn: 1, locale: fr }),
       startDate: weekStart,
       endDate: weekEnd,
       availableMembers: [],
