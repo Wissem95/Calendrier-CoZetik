@@ -232,19 +232,19 @@ export default function Home() {
         }}
       >
         <DialogContent className="max-w-2xl">
-          <DialogHeader>
+          <DialogHeader className="p-4 sm:p-6 pb-3 sm:pb-4">
             <div className="flex items-center gap-2 mb-2">
-              <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center">
-                <Upload className="w-4 h-4 text-white" />
+              <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-lg bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center flex-shrink-0">
+                <Upload className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-white" />
               </div>
-              <DialogTitle>Importer un calendrier annuel</DialogTitle>
+              <DialogTitle className="text-base sm:text-lg">Importer un calendrier annuel</DialogTitle>
             </div>
           </DialogHeader>
 
-          <DialogBody className="space-y-6">
+          <DialogBody className="space-y-4 sm:space-y-6 p-4 sm:p-6 pt-0">
             {/* Member Selection */}
-            <div className="space-y-3">
-              <label className="text-sm font-medium text-foreground">
+            <div className="space-y-2 sm:space-y-3">
+              <label className="text-xs sm:text-sm font-medium text-foreground block">
                 Sélectionner un membre
               </label>
               <div className="space-y-2">
@@ -260,21 +260,21 @@ export default function Home() {
                       type="button"
                       onClick={() => setSelectedMemberForImport(member.id)}
                       className={cn(
-                        'w-full flex items-center gap-3 p-3 border-2 rounded-lg transition-all hover:scale-[1.02]',
+                        'w-full flex items-center gap-2 sm:gap-3 p-2.5 sm:p-3 border-2 rounded-lg transition-all hover:scale-[1.02]',
                         selectedMemberForImport === member.id
                           ? 'border-primary bg-blue-50'
                           : 'border-gray-200 hover:border-gray-300'
                       )}
                     >
                       <div
-                        className="w-10 h-10 rounded-full flex items-center justify-center text-white font-semibold"
+                        className="w-9 h-9 sm:w-10 sm:h-10 rounded-full flex items-center justify-center text-white font-semibold text-sm flex-shrink-0"
                         style={{ backgroundColor: member.color }}
                       >
                         {member.name.split(' ').map(n => n[0]).join('')}
                       </div>
-                      <div className="flex-1 text-left">
-                        <div className="font-medium text-foreground">{member.name}</div>
-                        <div className="text-sm text-muted-foreground">{member.role}</div>
+                      <div className="flex-1 text-left min-w-0">
+                        <div className="font-medium text-foreground text-sm sm:text-base truncate">{member.name}</div>
+                        <div className="text-xs sm:text-sm text-muted-foreground truncate">{member.role}</div>
                       </div>
                     </button>
                     {/* Edit Button */}
@@ -288,7 +288,7 @@ export default function Home() {
                       className="absolute top-2 right-2 p-1.5 rounded-full bg-white border border-gray-300 hover:bg-gray-50 hover:border-gray-400 transition-all shadow-sm"
                       aria-label="Modifier ce membre"
                     >
-                      <Edit2 className="h-4 w-4 text-gray-600" />
+                      <Edit2 className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-gray-600" />
                     </button>
                   </motion.div>
                 ))}
