@@ -8,6 +8,7 @@ import { Button } from '@/components/ui/Button';
 import { Badge } from '@/components/ui/Badge';
 import { AvailabilityStatus } from '@/lib/types';
 import { useCalendarStore } from '@/lib/store';
+import { cn } from '@/lib/utils';
 
 interface DayInfo {
   date: Date;
@@ -227,55 +228,78 @@ export function DaySelectionModal({ memberId, memberName, initialDate, isOpen, o
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
-      <div className="bg-white rounded-lg shadow-xl max-w-5xl w-full max-h-[90vh] overflow-y-auto">
-        <div className="flex items-center justify-between p-6 border-b sticky top-0 bg-white z-10">
-          <div className="flex items-center gap-3">
-            <CalendarIcon className="h-6 w-6 text-blue-600" />
-            <div>
-              <h2 className="text-xl font-semibold">Modifier plusieurs jours</h2>
-              <p className="text-sm text-gray-500">{memberName}</p>
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-2 sm:p-4">
+      <div className="bg-white rounded-lg shadow-xl max-w-5xl w-full max-h-[95vh] sm:max-h-[90vh] overflow-y-auto">
+        <div className="flex items-center justify-between p-3 sm:p-6 border-b sticky top-0 bg-white z-10">
+          <div className="flex items-center gap-2 sm:gap-3 flex-1 min-w-0">
+            <CalendarIcon className="h-5 w-5 sm:h-6 sm:w-6 text-blue-600 flex-shrink-0" />
+            <div className="min-w-0 flex-1">
+              <h2 className="text-base sm:text-xl font-semibold truncate">Modifier plusieurs jours</h2>
+              <p className="text-xs sm:text-sm text-gray-500 truncate">{memberName}</p>
             </div>
           </div>
-          <button onClick={onClose} disabled={isLoading}><X className="h-5 w-5" /></button>
+          <button onClick={onClose} disabled={isLoading} className="ml-2 flex-shrink-0 p-1">
+            <X className="h-5 w-5" />
+          </button>
         </div>
 
-        <div className="p-6 space-y-6">
+        <div className="p-3 sm:p-6 space-y-4 sm:space-y-6">
           {/* Navigation mois */}
-          <div className="flex items-center justify-between border-b pb-4">
-            <Button type="button" variant="outline" size="sm" onClick={handlePreviousMonth} disabled={isLoading}>
-              <ChevronLeft className="h-4 w-4 mr-1" />Mois préc.
-            </Button>
-            <div className="text-center">
-              <div className="font-semibold text-lg">{format(currentMonth, 'MMMM yyyy', { locale: fr })}</div>
+          <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-2 sm:gap-0 border-b pb-3 sm:pb-4">
+            <div className="flex gap-2 order-2 sm:order-1">
+              <Button type="button" variant="outline" size="sm" onClick={handlePreviousMonth} disabled={isLoading} className="flex-1 sm:flex-none text-xs sm:text-sm">
+                <ChevronLeft className="h-3 w-3 sm:h-4 sm:w-4 sm:mr-1" />
+                <span className="hidden sm:inline">Mois préc.</span>
+              </Button>
+              <Button type="button" variant="outline" size="sm" onClick={handleToday} disabled={isLoading} className="flex-1 sm:flex-none text-xs sm:text-sm">
+                Aujourd&apos;hui
+              </Button>
+              <Button type="button" variant="outline" size="sm" onClick={handleNextMonth} disabled={isLoading} className="flex-1 sm:flex-none text-xs sm:text-sm">
+                <span className="hidden sm:inline">Mois suiv.</span>
+                <ChevronRight className="h-3 w-3 sm:h-4 sm:w-4 sm:ml-1" />
+              </Button>
+            </div>
+            <div className="text-center order-1 sm:order-2">
+              <div className="font-semibold text-base sm:text-lg">{format(currentMonth, 'MMMM yyyy', { locale: fr })}</div>
               <div className="text-xs text-gray-500">4 semaines affichées</div>
             </div>
-            <Button type="button" variant="outline" size="sm" onClick={handleToday} disabled={isLoading}>Aujourd&apos;hui</Button>
-            <Button type="button" variant="outline" size="sm" onClick={handleNextMonth} disabled={isLoading}>Mois suiv.<ChevronRight className="h-4 w-4 ml-1" /></Button>
           </div>
 
           {/* Grille des 4 semaines */}
-          <div className="space-y-4">
+          <div className="space-y-3 sm:space-y-4">
             {weeks.map(week => {
               const selectedInWeek = week.days.filter(d => selectedDays.has(d.dateStr)).length;
               return (
-                <div key={week.number} className="border rounded-lg p-4 bg-gray-50">
-                  <div className="flex items-center justify-between mb-3">
-                    <div className="flex items-center gap-3">
-                      <span className="font-medium">📅 Semaine {week.number}</span>
-                      <span className="text-sm text-gray-500">{format(week.start, 'd MMM', { locale: fr })} - {format(addDays(week.start, 6), 'd MMM yyyy', { locale: fr })}</span>
-                      {selectedInWeek > 0 && <Badge variant="info" className="text-xs">{selectedInWeek} sélectionné{selectedInWeek > 1 ? 's' : ''}</Badge>}
+                <div key={week.number} className="border rounded-lg p-3 sm:p-4 bg-gray-50">
+                  <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 mb-3">
+                    <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-3">
+                      <span className="font-medium text-sm sm:text-base">📅 Semaine {week.number}</span>
+                      <span className="text-xs sm:text-sm text-gray-500">{format(week.start, 'd MMM', { locale: fr })} - {format(addDays(week.start, 6), 'd MMM yyyy', { locale: fr })}</span>
+                      {selectedInWeek > 0 && <Badge variant="info" className="text-xs w-fit">{selectedInWeek} sélectionné{selectedInWeek > 1 ? 's' : ''}</Badge>}
                     </div>
-                    <Button type="button" variant="ghost" size="sm" onClick={() => selectWorkWeek(week)} disabled={isLoading} className="text-xs">Lun-Ven</Button>
+                    <Button type="button" variant="ghost" size="sm" onClick={() => selectWorkWeek(week)} disabled={isLoading} className="text-xs self-start sm:self-auto">
+                      Lun-Ven
+                    </Button>
                   </div>
-                  <div className="grid grid-cols-7 gap-2">
+                  <div className="grid grid-cols-3 sm:grid-cols-7 gap-1.5 sm:gap-2">
                     {week.days.map(day => {
                       const isSelected = selectedDays.has(day.dateStr);
                       return (
-                        <button key={day.dateStr} type="button" onClick={() => toggleDay(day.dateStr)} className={'p-2 border-2 rounded-lg transition-all text-center ' + (isSelected ? 'border-blue-500 bg-blue-50' : 'border-gray-200 hover:border-gray-300 bg-white') + (day.isInitialDay ? ' ring-2 ring-yellow-400' : '')}>
-                          <div className="flex justify-center mb-1">{isSelected ? <CheckSquare className="h-3 w-3 text-blue-600" /> : <Square className="h-3 w-3 text-gray-400" />}</div>
+                        <button
+                          key={day.dateStr}
+                          type="button"
+                          onClick={() => toggleDay(day.dateStr)}
+                          className={cn(
+                            'p-2 border-2 rounded-lg transition-all text-center min-h-[80px] sm:min-h-0',
+                            isSelected ? 'border-blue-500 bg-blue-50' : 'border-gray-200 hover:border-gray-300 bg-white',
+                            day.isInitialDay && 'ring-2 ring-yellow-400'
+                          )}
+                        >
+                          <div className="flex justify-center mb-1">
+                            {isSelected ? <CheckSquare className="h-3 w-3 sm:h-3 sm:w-3 text-blue-600" /> : <Square className="h-3 w-3 sm:h-3 sm:w-3 text-gray-400" />}
+                          </div>
                           <div className="text-xs font-medium">{format(day.date, 'EEE', { locale: fr })}</div>
-                          <div className="text-sm font-bold">{format(day.date, 'd')}</div>
+                          <div className="text-sm sm:text-sm font-bold">{format(day.date, 'd')}</div>
                           <div className="mt-1">{getStatusBadge(day.status)}</div>
                         </button>
                       );
@@ -287,44 +311,50 @@ export function DaySelectionModal({ memberId, memberName, initialDate, isOpen, o
           </div>
 
           {/* Actions sélection */}
-          <div className="flex items-center justify-between border-t pt-4">
-            <div className="flex gap-2 items-center">
-              <Button type="button" variant="outline" size="sm" onClick={selectAll} disabled={isLoading}>Tout (4 sem.)</Button>
-              <div className="flex items-center gap-1 border rounded-md bg-white">
-                <select value={selectedYear} onChange={(e) => setSelectedYear(Number(e.target.value))} disabled={isLoading} className="px-2 py-1 text-sm border-0 bg-transparent outline-none">
-                  {Array.from({ length: 10 }, (_, i) => new Date().getFullYear() - 2 + i).map(year => (
-                    <option key={year} value={year}>{year}</option>
-                  ))}
-                </select>
-                <Button type="button" variant="ghost" size="sm" onClick={selectYear} disabled={isLoading} className="font-semibold h-full rounded-l-none">
-                  🗓️ Année complète
+          <div className="flex flex-col gap-3 border-t pt-3 sm:pt-4">
+            <div className="flex flex-col sm:flex-row gap-2 sm:items-center justify-between">
+              <div className="flex flex-wrap gap-2 items-center">
+                <Button type="button" variant="outline" size="sm" onClick={selectAll} disabled={isLoading} className="text-xs">
+                  Tout (4 sem.)
+                </Button>
+                <div className="flex items-center gap-1 border rounded-md bg-white flex-1 sm:flex-none">
+                  <select value={selectedYear} onChange={(e) => setSelectedYear(Number(e.target.value))} disabled={isLoading} className="px-2 py-1 text-xs sm:text-sm border-0 bg-transparent outline-none">
+                    {Array.from({ length: 10 }, (_, i) => new Date().getFullYear() - 2 + i).map(year => (
+                      <option key={year} value={year}>{year}</option>
+                    ))}
+                  </select>
+                  <Button type="button" variant="ghost" size="sm" onClick={selectYear} disabled={isLoading} className="font-semibold h-full rounded-l-none text-xs whitespace-nowrap">
+                    🗓️ <span className="hidden sm:inline">Année</span>
+                  </Button>
+                </div>
+                <Button type="button" variant="outline" size="sm" onClick={deselectAll} disabled={isLoading} className="text-xs">
+                  Réinit.
                 </Button>
               </div>
-              <Button type="button" variant="outline" size="sm" onClick={deselectAll} disabled={isLoading}>Réinitialiser</Button>
+              <div className="text-left sm:text-right">
+                <Badge variant="secondary" className="text-xs sm:text-sm">✓ {selectedDays.size} jour{selectedDays.size > 1 ? 's' : ''} sélectionné{selectedDays.size > 1 ? 's' : ''}</Badge>
+              </div>
             </div>
-            <div className="text-right">
-              <Badge variant="secondary" className="text-sm">✓ {selectedDays.size} jour{selectedDays.size > 1 ? 's' : ''} sélectionné{selectedDays.size > 1 ? 's' : ''}</Badge>
-              {weekSelectionSummary.length > 0 && (
-                <div className="mt-2 text-xs text-gray-600 space-y-0.5">
-                  {weekSelectionSummary.map(w => <div key={w.number}>• Semaine {w.number}: {w.count} jour{w.count > 1 ? 's' : ''}</div>)}
-                </div>
-              )}
-            </div>
+            {weekSelectionSummary.length > 0 && (
+              <div className="text-xs text-gray-600 space-y-0.5 bg-blue-50 p-2 rounded">
+                {weekSelectionSummary.map(w => <div key={w.number}>• Semaine {w.number}: {w.count} jour{w.count > 1 ? 's' : ''}</div>)}
+              </div>
+            )}
           </div>
 
           {/* Motif récurrent */}
-          <div className="border-t pt-4">
+          <div className="border-t pt-3 sm:pt-4">
             <label className="flex items-center gap-2 mb-3 cursor-pointer">
               <input type="checkbox" checked={useRecurring} onChange={(e) => setUseRecurring(e.target.checked)} disabled={isLoading} className="rounded" />
-              <Repeat className="h-4 w-4 text-purple-600" />
-              <span className="font-medium">Appliquer un motif récurrent (alternance)</span>
+              <Repeat className="h-4 w-4 text-purple-600 flex-shrink-0" />
+              <span className="font-medium text-sm sm:text-base">Appliquer un motif récurrent (alternance)</span>
             </label>
 
             {useRecurring && (
-              <div className="ml-6 space-y-4 border-l-2 border-purple-200 pl-4 bg-purple-50/50 p-4 rounded-r-lg">
+              <div className="ml-0 sm:ml-6 space-y-3 sm:space-y-4 border-l-0 sm:border-l-2 border-purple-200 pl-0 sm:pl-4 bg-purple-50/50 p-3 sm:p-4 rounded-lg sm:rounded-r-lg">
                 <div>
-                  <label className="block text-sm font-medium mb-2">Jours de la semaine</label>
-                  <div className="flex gap-2 flex-wrap">
+                  <label className="block text-xs sm:text-sm font-medium mb-2">Jours de la semaine</label>
+                  <div className="grid grid-cols-4 sm:flex sm:gap-2 gap-2">
                     {[
                       { index: 1, label: 'Lun' },
                       { index: 2, label: 'Mar' },
@@ -334,25 +364,36 @@ export function DaySelectionModal({ memberId, memberName, initialDate, isOpen, o
                       { index: 6, label: 'Sam' },
                       { index: 0, label: 'Dim' },
                     ].map(day => (
-                      <button key={day.index} type="button" onClick={() => toggleWeekday(day.index)} disabled={isLoading} className={'px-3 py-2 text-sm font-medium rounded-lg border-2 transition-all ' + (selectedWeekdays.has(day.index) ? 'border-purple-500 bg-purple-100 text-purple-700' : 'border-gray-300 bg-white hover:border-purple-300')}>
+                      <button
+                        key={day.index}
+                        type="button"
+                        onClick={() => toggleWeekday(day.index)}
+                        disabled={isLoading}
+                        className={cn(
+                          'px-2 sm:px-3 py-2 text-xs sm:text-sm font-medium rounded-lg border-2 transition-all',
+                          selectedWeekdays.has(day.index)
+                            ? 'border-purple-500 bg-purple-100 text-purple-700'
+                            : 'border-gray-300 bg-white hover:border-purple-300'
+                        )}
+                      >
                         {day.label}
                       </button>
                     ))}
                   </div>
                 </div>
 
-                <div className="grid grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
                   <div>
-                    <label className="block text-sm font-medium mb-1">Date de début</label>
-                    <input type="date" value={recurringStartDate} onChange={(e) => setRecurringStartDate(e.target.value)} disabled={isLoading} className="w-full px-3 py-2 border rounded-md" />
+                    <label className="block text-xs sm:text-sm font-medium mb-1">Date de début</label>
+                    <input type="date" value={recurringStartDate} onChange={(e) => setRecurringStartDate(e.target.value)} disabled={isLoading} className="w-full px-3 py-2 text-sm border rounded-md" />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium mb-1">Date de fin</label>
-                    <input type="date" value={recurringEndDate} onChange={(e) => setRecurringEndDate(e.target.value)} disabled={isLoading} className="w-full px-3 py-2 border rounded-md" />
+                    <label className="block text-xs sm:text-sm font-medium mb-1">Date de fin</label>
+                    <input type="date" value={recurringEndDate} onChange={(e) => setRecurringEndDate(e.target.value)} disabled={isLoading} className="w-full px-3 py-2 text-sm border rounded-md" />
                   </div>
                 </div>
 
-                <Button type="button" onClick={applyRecurringPattern} disabled={isLoading || selectedWeekdays.size === 0} className="w-full bg-purple-600 hover:bg-purple-700">
+                <Button type="button" onClick={applyRecurringPattern} disabled={isLoading || selectedWeekdays.size === 0} className="w-full bg-purple-600 hover:bg-purple-700 text-sm">
                   <Repeat className="h-4 w-4 mr-2" />
                   Appliquer le motif ({selectedWeekdays.size} jour{selectedWeekdays.size > 1 ? 's' : ''}/semaine)
                 </Button>
@@ -365,17 +406,17 @@ export function DaySelectionModal({ memberId, memberName, initialDate, isOpen, o
           </div>
 
           {/* Actions */}
-          <div className="border-t pt-4 space-y-4">
-            <h3 className="font-medium">Action à appliquer</h3>
-            <label className="flex items-start gap-3 p-4 border rounded-lg cursor-pointer hover:bg-gray-50">
-              <input type="radio" name="actionType" value="set-status" checked={actionType === 'set-status'} onChange={() => setActionType('set-status')} disabled={isLoading} className="mt-1" />
-              <div className="flex-1 space-y-3">
-                <div className="font-medium">Appliquer un statut</div>
+          <div className="border-t pt-3 sm:pt-4 space-y-3 sm:space-y-4">
+            <h3 className="font-medium text-sm sm:text-base">Action à appliquer</h3>
+            <label className="flex items-start gap-2 sm:gap-3 p-3 sm:p-4 border rounded-lg cursor-pointer hover:bg-gray-50">
+              <input type="radio" name="actionType" value="set-status" checked={actionType === 'set-status'} onChange={() => setActionType('set-status')} disabled={isLoading} className="mt-1 flex-shrink-0" />
+              <div className="flex-1 space-y-3 min-w-0">
+                <div className="font-medium text-sm sm:text-base">Appliquer un statut</div>
                 {actionType === 'set-status' && (
                   <>
                     <div>
-                      <label className="block text-sm font-medium mb-1">Statut</label>
-                      <select value={newStatus} onChange={(e) => setNewStatus(e.target.value as AvailabilityStatus)} disabled={isLoading} className="w-full px-3 py-2 border rounded-md">
+                      <label className="block text-xs sm:text-sm font-medium mb-1">Statut</label>
+                      <select value={newStatus} onChange={(e) => setNewStatus(e.target.value as AvailabilityStatus)} disabled={isLoading} className="w-full px-3 py-2 text-sm border rounded-md">
                         <option value="company">Entreprise</option>
                         <option value="school">École</option>
                         <option value="available">Disponible</option>
@@ -384,27 +425,29 @@ export function DaySelectionModal({ memberId, memberName, initialDate, isOpen, o
                       </select>
                     </div>
                     <div>
-                      <label className="block text-sm font-medium mb-1">Note (optionnel)</label>
-                      <input type="text" value={note} onChange={(e) => setNote(e.target.value)} disabled={isLoading} placeholder="Note commune..." className="w-full px-3 py-2 border rounded-md" />
+                      <label className="block text-xs sm:text-sm font-medium mb-1">Note (optionnel)</label>
+                      <input type="text" value={note} onChange={(e) => setNote(e.target.value)} disabled={isLoading} placeholder="Note commune..." className="w-full px-3 py-2 text-sm border rounded-md" />
                     </div>
                   </>
                 )}
               </div>
             </label>
-            <label className="flex items-start gap-3 p-4 border rounded-lg cursor-pointer hover:bg-gray-50">
-              <input type="radio" name="actionType" value="delete" checked={actionType === 'delete'} onChange={() => setActionType('delete')} disabled={isLoading} className="mt-1" />
-              <div className="flex-1">
-                <div className="font-medium text-red-600">Supprimer les événements</div>
-                <p className="text-sm text-gray-500 mt-1">Efface les événements des jours sélectionnés</p>
+            <label className="flex items-start gap-2 sm:gap-3 p-3 sm:p-4 border rounded-lg cursor-pointer hover:bg-gray-50">
+              <input type="radio" name="actionType" value="delete" checked={actionType === 'delete'} onChange={() => setActionType('delete')} disabled={isLoading} className="mt-1 flex-shrink-0" />
+              <div className="flex-1 min-w-0">
+                <div className="font-medium text-red-600 text-sm sm:text-base">Supprimer les événements</div>
+                <p className="text-xs sm:text-sm text-gray-500 mt-1">Efface les événements des jours sélectionnés</p>
               </div>
             </label>
           </div>
         </div>
 
         {/* Footer */}
-        <div className="flex items-center justify-end gap-3 p-6 border-t bg-gray-50">
-          <Button type="button" variant="outline" onClick={onClose} disabled={isLoading}>Annuler</Button>
-          <Button type="button" onClick={handleApply} disabled={isLoading || selectedDays.size === 0} className="flex items-center gap-2">
+        <div className="flex flex-col-reverse sm:flex-row items-stretch sm:items-center justify-end gap-2 sm:gap-3 p-3 sm:p-6 border-t bg-gray-50">
+          <Button type="button" variant="outline" onClick={onClose} disabled={isLoading} className="w-full sm:w-auto">
+            Annuler
+          </Button>
+          <Button type="button" onClick={handleApply} disabled={isLoading || selectedDays.size === 0} className="flex items-center justify-center gap-2 w-full sm:w-auto">
             {actionType === 'delete' ? <><Trash2 className="h-4 w-4" /> Supprimer</> : <><Save className="h-4 w-4" /> Appliquer</>}
             {isLoading && '...'}
           </Button>

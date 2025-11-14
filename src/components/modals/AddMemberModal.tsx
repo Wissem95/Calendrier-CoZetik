@@ -121,27 +121,27 @@ export function AddMemberModal({ open, onOpenChange }: AddMemberModalProps) {
 
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
-      <DialogContent>
+      <DialogContent className="max-w-md sm:max-w-lg">
         {/* Header */}
-        <DialogHeader>
+        <DialogHeader className="p-4 sm:p-6 pb-3 sm:pb-4">
           <div className="flex items-center gap-2 mb-2">
-            <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center">
-              <UserPlus className="w-4 h-4 text-white" />
+            <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-lg bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center flex-shrink-0">
+              <UserPlus className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-white" />
             </div>
-            <DialogTitle>Ajouter un membre</DialogTitle>
+            <DialogTitle className="text-base sm:text-lg">Ajouter un membre</DialogTitle>
           </div>
-          <DialogDescription>
+          <DialogDescription className="text-xs sm:text-sm">
             Ajoutez un nouveau membre à l&apos;équipe
           </DialogDescription>
         </DialogHeader>
 
         {/* Form */}
         <form onSubmit={handleSubmit}>
-          <DialogBody>
-            <div className="space-y-4">
+          <DialogBody className="p-4 sm:p-6 pt-0">
+            <div className="space-y-3 sm:space-y-4">
               {/* Name Field (Required) */}
-              <div className="space-y-2">
-                <label htmlFor="member-name" className="text-sm font-medium text-foreground">
+              <div className="space-y-1.5 sm:space-y-2">
+                <label htmlFor="member-name" className="text-xs sm:text-sm font-medium text-foreground block">
                   Nom complet <span className="text-red-500">*</span>
                 </label>
                 <input
@@ -150,15 +150,15 @@ export function AddMemberModal({ open, onOpenChange }: AddMemberModalProps) {
                   placeholder="Ex: Jean Dupont"
                   value={name}
                   onChange={(e) => setName(e.target.value)}
-                  className="w-full px-3 py-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all"
+                  className="w-full px-3 py-2.5 sm:py-3 text-sm sm:text-base border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all"
                   autoFocus
                   required
                 />
               </div>
 
               {/* Role Field (Optional) */}
-              <div className="space-y-2">
-                <label htmlFor="member-role" className="text-sm font-medium text-foreground">
+              <div className="space-y-1.5 sm:space-y-2">
+                <label htmlFor="member-role" className="text-xs sm:text-sm font-medium text-foreground block">
                   Rôle
                 </label>
                 <input
@@ -167,13 +167,13 @@ export function AddMemberModal({ open, onOpenChange }: AddMemberModalProps) {
                   placeholder="Ex: Développeur Full-Stack"
                   value={role}
                   onChange={(e) => setRole(e.target.value)}
-                  className="w-full px-3 py-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all"
+                  className="w-full px-3 py-2.5 sm:py-3 text-sm sm:text-base border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all"
                 />
               </div>
 
               {/* Rotation Pattern Field */}
-              <div className="space-y-2">
-                <label htmlFor="member-rotation" className="text-sm font-medium text-foreground">
+              <div className="space-y-1.5 sm:space-y-2">
+                <label htmlFor="member-rotation" className="text-xs sm:text-sm font-medium text-foreground block">
                   Rythme d&apos;alternance
                 </label>
                 <input
@@ -182,18 +182,19 @@ export function AddMemberModal({ open, onOpenChange }: AddMemberModalProps) {
                   placeholder="Ex: 3 semaines entreprise, 1 semaine école"
                   value={rotationPattern}
                   onChange={(e) => setRotationPattern(e.target.value)}
-                  className="w-full px-3 py-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all"
+                  className="w-full px-3 py-2.5 sm:py-3 text-sm sm:text-base border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all"
                 />
               </div>
             </div>
           </DialogBody>
 
           {/* Footer */}
-          <DialogFooter>
+          <DialogFooter className="p-4 sm:p-6 pt-3 sm:pt-4 flex-col-reverse sm:flex-row gap-2 sm:gap-3">
             <Button
               type="button"
               variant="outline"
               onClick={() => onOpenChange(false)}
+              className="w-full sm:w-auto"
             >
               Annuler
             </Button>
@@ -201,6 +202,7 @@ export function AddMemberModal({ open, onOpenChange }: AddMemberModalProps) {
               type="submit"
               variant="primary"
               disabled={!name.trim()}
+              className="w-full sm:w-auto"
             >
               Ajouter
             </Button>

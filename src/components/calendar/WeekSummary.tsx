@@ -18,11 +18,11 @@ interface MemberListProps {
 
 const MemberList = ({ members, badgeVariant }: MemberListProps) => {
   if (members.length === 0) {
-    return <p className="text-sm text-muted-foreground italic ml-7">Aucun</p>
+    return <p className="text-xs sm:text-sm text-muted-foreground italic ml-5 sm:ml-7">Aucun</p>
   }
 
   return (
-    <div className="space-y-2 ml-7">
+    <div className="space-y-2 ml-5 sm:ml-7">
       {members.map((member, index) => (
         <motion.div
           key={member.id}
@@ -32,13 +32,13 @@ const MemberList = ({ members, badgeVariant }: MemberListProps) => {
           className="flex items-center gap-2"
         >
           <div
-            className="w-8 h-8 rounded-full flex items-center justify-center text-xs font-medium text-white"
+            className="w-7 h-7 sm:w-8 sm:h-8 rounded-full flex items-center justify-center text-xs font-medium text-white flex-shrink-0"
             style={{ backgroundColor: member.color }}
           >
             {getInitials(member.name)}
           </div>
-          <span className="text-sm font-medium truncate flex-1">{member.name}</span>
-          <Badge variant={badgeVariant} className="shrink-0">
+          <span className="text-xs sm:text-sm font-medium truncate flex-1 min-w-0">{member.name}</span>
+          <Badge variant={badgeVariant} className="shrink-0 text-xs">
             {member.role}
           </Badge>
         </motion.div>
@@ -57,19 +57,19 @@ export function WeekSummary({ summary }: WeekSummaryProps) {
       transition={{ duration: 0.3 }}
     >
       <Card className="bg-gradient-to-br from-blue-50 to-indigo-50 border-blue-200">
-        <CardHeader>
-          <div className="flex items-center justify-between">
-            <CardTitle className="text-xl font-bold flex items-center gap-2">
-              <Calendar className="w-5 h-5 text-blue-600" />
-              Résumé Semaine {summary.weekNumber}
+        <CardHeader className="p-4 sm:p-6">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+            <CardTitle className="text-base sm:text-xl font-bold flex items-center gap-2">
+              <Calendar className="w-4 h-4 sm:w-5 sm:h-5 text-blue-600 flex-shrink-0" />
+              <span className="truncate">Résumé Semaine {summary.weekNumber}</span>
             </CardTitle>
-            <Badge variant="info" className="shrink-0">
+            <Badge variant="info" className="shrink-0 w-fit text-xs sm:text-sm">
               {totalMembers} membre{totalMembers > 1 ? 's' : ''}
             </Badge>
           </div>
         </CardHeader>
 
-        <CardContent className="space-y-4">
+        <CardContent className="space-y-3 sm:space-y-4 p-4 sm:p-6 pt-0">
           {/* Section En entreprise - avec animation stagger */}
           <motion.div
             initial={{ opacity: 0, y: 10 }}
@@ -77,8 +77,8 @@ export function WeekSummary({ summary }: WeekSummaryProps) {
             transition={{ delay: 0.1, duration: 0.3 }}
           >
             <div className="flex items-center gap-2 mb-2">
-              <UserCheck className="w-5 h-5 text-green-600" />
-              <h3 className="font-semibold text-green-700">
+              <UserCheck className="w-4 h-4 sm:w-5 sm:h-5 text-green-600 flex-shrink-0" />
+              <h3 className="font-semibold text-green-700 text-sm sm:text-base">
                 En entreprise ({summary.availableMembers.length})
               </h3>
             </div>
@@ -92,8 +92,8 @@ export function WeekSummary({ summary }: WeekSummaryProps) {
             transition={{ delay: 0.15, duration: 0.3 }}
           >
             <div className="flex items-center gap-2 mb-2">
-              <GraduationCap className="w-5 h-5 text-blue-600" />
-              <h3 className="font-semibold text-blue-700">
+              <GraduationCap className="w-4 h-4 sm:w-5 sm:h-5 text-blue-600 flex-shrink-0" />
+              <h3 className="font-semibold text-blue-700 text-sm sm:text-base">
                 À l&apos;école ({summary.schoolMembers.length})
               </h3>
             </div>
@@ -108,8 +108,8 @@ export function WeekSummary({ summary }: WeekSummaryProps) {
               transition={{ delay: 0.2, duration: 0.3 }}
             >
               <div className="flex items-center gap-2 mb-2">
-                <Users className="w-5 h-5 text-red-600" />
-                <h3 className="font-semibold text-red-700">
+                <Users className="w-4 h-4 sm:w-5 sm:h-5 text-red-600 flex-shrink-0" />
+                <h3 className="font-semibold text-red-700 text-sm sm:text-base">
                   Indisponibles ({summary.unavailableMembers.length})
                 </h3>
               </div>

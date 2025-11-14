@@ -182,32 +182,37 @@ export function TeamCalendar() {
   return (
     <Card className="w-full">
       {/* Header avec navigation */}
-      <CardHeader className="space-y-4">
-        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-          <div>
-            <h2 className="text-2xl font-bold">
+      <CardHeader className="space-y-3 sm:space-y-4 p-4 sm:p-6">
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between sm:gap-4">
+          <div className="flex-1">
+            <h2 className="text-xl sm:text-2xl font-bold">
               Semaine {weekNumber} - {year}
             </h2>
-            <p className="text-sm text-muted-foreground mt-1">
+            <p className="text-xs sm:text-sm text-muted-foreground mt-1">
               {format(weekStart, 'd MMMM', { locale: fr })} -{' '}
               {format(weekEnd, 'd MMMM yyyy', { locale: fr })}
             </p>
           </div>
 
           {/* Boutons de navigation avec animations */}
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 self-start sm:self-auto">
             <motion.div whileHover={{ x: -3 }} transition={{ duration: 0.2 }}>
               <Button
                 variant="outline"
                 size="icon"
                 onClick={handlePreviousWeek}
                 aria-label="Semaine précédente"
+                className="h-9 w-9 sm:h-10 sm:w-10"
               >
                 <ChevronLeft className="h-4 w-4" />
               </Button>
             </motion.div>
 
-            <Button variant="outline" onClick={handleToday}>
+            <Button
+              variant="outline"
+              onClick={handleToday}
+              className="text-xs sm:text-sm h-9 sm:h-10 px-2 sm:px-4"
+            >
               Aujourd&apos;hui
             </Button>
 
@@ -217,6 +222,7 @@ export function TeamCalendar() {
                 size="icon"
                 onClick={handleNextWeek}
                 aria-label="Semaine suivante"
+                className="h-9 w-9 sm:h-10 sm:w-10"
               >
                 <ChevronRight className="h-4 w-4" />
               </Button>
@@ -226,9 +232,87 @@ export function TeamCalendar() {
       </CardHeader>
 
       {/* Table calendrier avec scroll horizontal */}
-      <CardContent>
+      <CardContent className="p-3 sm:p-6">
+        {/* Vue Mobile: Cartes par jour */}
+        <div className="block md:hidden space-y-3">
+          {weekDays.map((day, dayIndex) => {
+            const isDayToday = isToday(day);
+            return (
+              <motion.div
+                key={day.toISOString()}
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.3, delay: dayIndex * 0.05 }}
+                className={cn(
+                  'border-2 rounded-lg overflow-hidden',
+                  isDayToday ? 'border-yellow-400 bg-yellow-50' : 'border-gray-200 bg-white'
+                )}
+              >
+                {/* Header du jour */}
+                <div className={cn(
+                  'p-3 text-white font-semibold',
+                  isDayToday
+                    ? 'bg-gradient-to-r from-yellow-500 to-yellow-600'
+                    : 'bg-gradient-to-r from-blue-600 to-indigo-600'
+                )}>
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <span className="text-sm uppercase">
+                        {format(day, 'EEEE', { locale: fr })}
+                      </span>
+                      {isDayToday && (
+                        <Badge variant="secondary" className="text-xs bg-white/20 text-white border-white/30">
+                          Aujourd&apos;hui
+                        </Badge>
+                      )}
+                    </div>
+                    <span className="text-lg font-bold">
+                      {format(day, 'd MMM', { locale: fr })}
+                    </span>
+                  </div>
+                </div>
+
+                {/* Liste des membres pour ce jour */}
+                <div className="divide-y">
+                  {members.map((member) => {
+                    const status = getMemberStatus(member.id, day);
+                    return (
+                      <div
+                        key={member.id}
+                        onClick={() => handleEventClick(member.id, day)}
+                        className="p-3 flex items-center justify-between hover:bg-gray-50 active:bg-gray-100 transition-colors cursor-pointer"
+                      >
+                        <div className="flex items-center gap-2 flex-1 min-w-0">
+                          <div
+                            className="h-8 w-8 rounded-full flex items-center justify-center text-white font-semibold text-xs flex-shrink-0"
+                            style={{ backgroundColor: member.color }}
+                          >
+                            {getInitials(member.name)}
+                          </div>
+                          <div className="min-w-0 flex-1">
+                            <span className="text-sm font-medium truncate block">
+                              {member.name}
+                            </span>
+                            <span className="text-xs text-gray-500 truncate block">
+                              {member.role}
+                            </span>
+                          </div>
+                        </div>
+                        <div className="ml-2">
+                          {getStatusBadge(member.id, day)}
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </motion.div>
+            );
+          })}
+        </div>
+
+        {/* Vue Desktop: Table classique */}
         <motion.div
-          className="overflow-x-auto"
+          className="hidden md:block overflow-x-auto"
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.3 }}

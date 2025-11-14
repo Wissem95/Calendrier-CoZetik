@@ -116,48 +116,48 @@ export default function Home() {
           initial={{ opacity: 0, x: -20 }}
           animate={{ opacity: 1, x: 0 }}
           transition={{ duration: 0.5 }}
-          className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4"
+          className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 py-3 sm:py-4"
         >
-          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+          <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between sm:gap-4">
             {/* Left section: Logo + Titles */}
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-2 sm:gap-3">
               {/* Logo with gradient */}
-              <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center flex-shrink-0">
-                <Calendar className="w-6 h-6 text-white" />
+              <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-lg bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center flex-shrink-0">
+                <Calendar className="w-4 h-4 sm:w-6 sm:h-6 text-white" />
               </div>
 
               {/* Titles */}
               <div className="flex flex-col">
-                <h1 className="text-xl font-bold text-foreground">
+                <h1 className="text-lg sm:text-xl font-bold text-foreground">
                   Team Calendar
                 </h1>
-                <p className="text-xs text-gray-500">
+                <p className="text-xs text-gray-500 hidden sm:block">
                   Planning d&apos;équipe collaboratif
                 </p>
               </div>
             </div>
 
-            {/* Right section: Members badge */}
-            <Badge variant="outline" className="hidden sm:flex items-center gap-1.5 w-fit">
-              <Users className="w-3.5 h-3.5" />
-              <span>{members.length} membre{members.length !== 1 ? 's' : ''}</span>
+            {/* Right section: Members badge - visible on mobile too */}
+            <Badge variant="outline" className="flex items-center gap-1.5 w-fit self-start sm:self-auto">
+              <Users className="w-3 h-3 sm:w-3.5 sm:h-3.5" />
+              <span className="text-xs sm:text-sm">{members.length} membre{members.length !== 1 ? 's' : ''}</span>
             </Badge>
           </div>
         </motion.div>
       </header>
 
       {/* Action Bar */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-6">
+      <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 pt-4 sm:pt-6">
         <motion.div
           initial={{ opacity: 0, y: -10 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.3, delay: 0.1 }}
-          className="flex flex-wrap gap-3 mb-6"
+          className="flex flex-col sm:flex-row gap-2 sm:gap-3 mb-4 sm:mb-6"
         >
           <Button
             variant="primary"
             onClick={() => setShowAddMember(true)}
-            className="shadow-lg hover:shadow-xl"
+            className="shadow-lg hover:shadow-xl w-full sm:w-auto justify-center sm:justify-start text-sm sm:text-base h-11 sm:h-10"
           >
             <Plus className="w-4 h-4" />
             Ajouter un membre
@@ -167,6 +167,7 @@ export default function Home() {
             variant="outline"
             onClick={() => setShowAddEvent(true)}
             disabled={members.length === 0}
+            className="w-full sm:w-auto justify-center sm:justify-start text-sm sm:text-base h-11 sm:h-10"
           >
             <Plus className="w-4 h-4" />
             Ajouter une période
@@ -176,6 +177,7 @@ export default function Home() {
             variant="outline"
             onClick={() => setShowImportCalendar(true)}
             disabled={members.length === 0}
+            className="w-full sm:w-auto justify-center sm:justify-start text-sm sm:text-base h-11 sm:h-10"
           >
             <Upload className="w-4 h-4" />
             Importer un calendrier
@@ -188,7 +190,7 @@ export default function Home() {
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.3, delay: 0.2 }}
-        className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-6 space-y-6"
+        className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 pb-4 sm:pb-6 space-y-4 sm:space-y-6"
       >
         {/* Calendrier */}
         <TeamCalendar />

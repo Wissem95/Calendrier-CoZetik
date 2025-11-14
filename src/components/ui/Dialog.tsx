@@ -183,7 +183,7 @@ export const DialogContent = React.forwardRef<HTMLDivElement, DialogContentProps
       <AnimatePresence>
         {open && (
           <div
-            className="fixed inset-0 z-50 flex items-center justify-center p-4"
+            className="fixed inset-0 z-50 flex items-center justify-center p-2 sm:p-4"
             onClick={handleBackdropClick}
           >
             {/* Backdrop overlay with blur */}
@@ -200,7 +200,7 @@ export const DialogContent = React.forwardRef<HTMLDivElement, DialogContentProps
             <motion.div
               ref={contentRef}
               className={cn(
-                'relative z-50 w-full max-w-lg rounded-lg border bg-background p-6 shadow-lg',
+                'relative z-50 w-full max-w-lg rounded-lg border bg-background shadow-lg max-h-[95vh] overflow-y-auto',
                 className
               )}
               initial={{ opacity: 0, scale: 0.95 }}
@@ -216,7 +216,7 @@ export const DialogContent = React.forwardRef<HTMLDivElement, DialogContentProps
               {showCloseButton && (
                 <button
                   onClick={() => onOpenChange?.(false)}
-                  className="absolute right-4 top-4 rounded-sm opacity-70 ring-offset-background transition-opacity hover:opacity-100 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:pointer-events-none"
+                  className="absolute right-3 top-3 sm:right-4 sm:top-4 rounded-sm opacity-70 ring-offset-background transition-opacity hover:opacity-100 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:pointer-events-none z-10 bg-white/80 p-1"
                   aria-label="Close dialog"
                 >
                   <X className="h-4 w-4" />

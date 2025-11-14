@@ -95,29 +95,44 @@ export function ImportManager() {
 
   return (
     <Card>
-      <CardHeader className="flex flex-row items-center justify-between">
-        <h3 className="text-lg font-semibold">Imports de calendriers</h3>
-        <Button variant="outline" size="sm" onClick={fetchImports}><RefreshCw className="h-4 w-4 mr-2" />Actualiser</Button>
+      <CardHeader className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-4 sm:p-6">
+        <h3 className="text-base sm:text-lg font-semibold">Imports de calendriers</h3>
+        <Button variant="outline" size="sm" onClick={fetchImports} className="w-full sm:w-auto text-xs sm:text-sm">
+          <RefreshCw className="h-3 w-3 sm:h-4 sm:w-4 mr-2" />
+          Actualiser
+        </Button>
       </CardHeader>
-      <CardContent>
-        <div className="space-y-3">
+      <CardContent className="p-4 sm:p-6 pt-0">
+        <div className="space-y-2 sm:space-y-3">
           {imports.map((item) => (
-            <div key={item.id} className="flex items-center justify-between p-4 border rounded-lg hover:bg-gray-50">
-              <div className="flex items-center gap-3 flex-1">
-                <FileText className="h-5 w-5 text-blue-500" />
-                <div className="flex-1">
-                  <p className="font-medium truncate">{item.file_name}</p>
-                  <div className="flex gap-2 mt-1 text-sm text-gray-500">
-                    <span>{getMemberName(item.member_id)}</span>
-                    <span>•</span>
-                    <span>{format(new Date(item.upload_date), 'dd MMM yyyy', { locale: fr })}</span>
-                    {item.eventsCount !== undefined && (<><span>•</span><Badge variant="outline">{item.eventsCount} événements</Badge></>)}
+            <div key={item.id} className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-3 sm:p-4 border rounded-lg hover:bg-gray-50">
+              <div className="flex items-start sm:items-center gap-2 sm:gap-3 flex-1 min-w-0">
+                <FileText className="h-4 w-4 sm:h-5 sm:w-5 text-blue-500 flex-shrink-0 mt-0.5 sm:mt-0" />
+                <div className="flex-1 min-w-0">
+                  <p className="font-medium truncate text-sm sm:text-base">{item.file_name}</p>
+                  <div className="flex flex-wrap gap-1 sm:gap-2 mt-1 text-xs sm:text-sm text-gray-500">
+                    <span className="truncate">{getMemberName(item.member_id)}</span>
+                    <span className="hidden sm:inline">•</span>
+                    <span className="whitespace-nowrap">{format(new Date(item.upload_date), 'dd MMM yyyy', { locale: fr })}</span>
+                    {item.eventsCount !== undefined && (
+                      <>
+                        <span className="hidden sm:inline">•</span>
+                        <Badge variant="outline" className="text-xs">{item.eventsCount} événements</Badge>
+                      </>
+                    )}
                   </div>
                 </div>
-                <Badge variant="secondary">{item.file_type.toUpperCase()}</Badge>
+                <Badge variant="secondary" className="text-xs sm:text-sm flex-shrink-0">{item.file_type.toUpperCase()}</Badge>
               </div>
-              <Button variant="ghost" size="sm" onClick={() => handleDelete(item)} disabled={deletingId === item.id} className="ml-4 text-red-600 hover:bg-red-50">
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => handleDelete(item)}
+                disabled={deletingId === item.id}
+                className="text-red-600 hover:bg-red-50 self-end sm:self-auto w-full sm:w-auto"
+              >
                 {deletingId === item.id ? <RefreshCw className="h-4 w-4 animate-spin" /> : <Trash2 className="h-4 w-4" />}
+                <span className="ml-2 sm:hidden">Supprimer</span>
               </Button>
             </div>
           ))}
