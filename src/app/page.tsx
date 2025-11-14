@@ -64,9 +64,9 @@ export default function Home() {
   }, [])
 
   // Memoize summary calculation to avoid recalculation on every render
-  // Dependencies: getWeekSummary, selectedWeek
+  // Dependencies: getWeekSummary, selectedWeek, members, events
   // getWeekSummary internally accesses members and events from the store
-  const summary = useMemo(() => getWeekSummary(selectedWeek), [getWeekSummary, selectedWeek])
+  const summary = useMemo(() => getWeekSummary(selectedWeek), [getWeekSummary, selectedWeek, members, events])
 
   // Calculate selected member for import modal
   const selectedMember = members.find(m => m.id === selectedMemberForImport)
