@@ -434,10 +434,15 @@ export function TeamCalendar() {
           initialDate={selectedDay.date}
           isOpen={!!selectedDay}
           onClose={() => setSelectedDay(null)}
-          onUpdate={() => {
+          onUpdate={async () => {
             setSelectedDay(null);
-            // Force re-render to refresh data
-            window.location.reload();
+            // Recharger les données depuis l'API au lieu de recharger toute la page
+            try {
+              const { loadInitialData } = await import('@/lib/store');
+              await loadInitialData();
+            } catch (error) {
+              console.error('Erreur lors du rechargement des données:', error);
+            }
           }}
         />
       )}

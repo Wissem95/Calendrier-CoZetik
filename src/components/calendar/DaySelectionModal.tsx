@@ -3,7 +3,7 @@
 import React, { useState, useMemo } from 'react';
 import { format, addDays, startOfWeek, addWeeks, getWeek, startOfDay, startOfMonth, endOfMonth, addMonths, subMonths, startOfYear, endOfYear, eachDayOfInterval, eachWeekOfInterval, getDay } from 'date-fns';
 import { fr } from 'date-fns/locale';
-import { X, CheckSquare, Square, Trash2, Save, Calendar as CalendarIcon, ChevronLeft, ChevronRight, Repeat } from 'lucide-react';
+import { X, CheckSquare, Square, Trash2, Save, Calendar as CalendarIcon, ChevronLeft, ChevronRight, Repeat, Plus, Replace, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
 import { Badge } from '@/components/ui/Badge';
 import { AvailabilityStatus } from '@/lib/types';
@@ -42,6 +42,8 @@ export function DaySelectionModal({ memberId, memberName, initialDate, isOpen, o
   const [actionType, setActionType] = useState<'set-status' | 'delete'>('set-status');
   const [newStatus, setNewStatus] = useState<AvailabilityStatus>('company');
   const [note, setNote] = useState('');
+  const [selectionMode, setSelectionMode] = useState<'replace' | 'add'>('replace');
+  const [loadingMessage, setLoadingMessage] = useState('');
 
   // États pour le motif récurrent
   const [useRecurring, setUseRecurring] = useState(false);
@@ -106,9 +108,9 @@ export function DaySelectionModal({ memberId, memberName, initialDate, isOpen, o
   };
 
   const selectWorkWeek = (week: WeekInfo) => {
-    const newSelection = new Set(selectedDays);
-    week.days.slice(0, 5).forEach(day => newSelection.add(day.dateStr));
-    setSelectedDays(newSelection);
+    const weekDays = week.days.slice(0, 5).map(d => d.dateStr);
+    // Force toujours le remplacement pour une sélection claire Lun-Ven uniquement
+    setSelectedDays(new Set(weekDays));
   };
 
   const selectAll = () => {
@@ -123,7 +125,11 @@ export function DaySelectionModal({ memberId, memberName, initialDate, isOpen, o
     const yearEnd = endOfYear(new Date(selectedYear, 0, 1));
     const allDaysInYear = eachDayOfInterval({ start: yearStart, end: yearEnd });
     const yearDates = allDaysInYear.map(d => format(d, 'yyyy-MM-dd'));
-    setSelectedDays(new Set([...selectedDays, ...yearDates]));
+    if (selectionMode === 'replace') {
+      setSelectedDays(new Set(yearDates));
+    } else {
+      setSelectedDays(new Set([...selectedDays, ...yearDates]));
+    }
   };
 
   const toggleWeekday = (dayIndex: number) => {
@@ -154,7 +160,11 @@ export function DaySelectionModal({ memberId, memberName, initialDate, isOpen, o
     });
 
     const matchingDateStrs = matchingDays.map(d => format(d, 'yyyy-MM-dd'));
-    setSelectedDays(new Set([...selectedDays, ...matchingDateStrs]));
+    if (selectionMode === 'replace') {
+      setSelectedDays(new Set(matchingDateStrs));
+    } else {
+      setSelectedDays(new Set([...selectedDays, ...matchingDateStrs]));
+    }
   };
 
   const handlePreviousMonth = () => setCurrentMonth(subMonths(currentMonth, 1));
@@ -162,58 +172,126 @@ export function DaySelectionModal({ memberId, memberName, initialDate, isOpen, o
   const handleToday = () => setCurrentMonth(new Date());
 
   const handleApply = async () => {
-    if (selectedDays.size === 0) { alert('Sélectionnez au moins un jour'); return; }
+    if (selectedDays.size === 0) {
+      alert('Sélectionnez au moins un jour');
+      return;
+    }
+
     setIsLoading(true);
+    setLoadingMessage(`Traitement de ${selectedDays.size} jour(s)...`);
     try {
       const promises = [];
+      const errors: string[] = [];
 
       for (const dateStr of selectedDays) {
-        // Reconstruire la date à partir du format yyyy-MM-dd
-        const [year, month, day] = dateStr.split('-').map(Number);
-        const date = new Date(year, month - 1, day);
+        try {
+          // Reconstruire la date en UTC pour éviter les problèmes de timezone
+          // Utiliser midi UTC (12:00) pour s'assurer que la date reste correcte dans tous les fuseaux
+          const date = new Date(dateStr + 'T12:00:00.000Z');
+          const targetDate = startOfDay(date);
 
-        // Chercher l'événement existant pour cette date
-        const targetDate = startOfDay(date);
-        const event = events.find((e) => {
-          if (e.memberId !== memberId) return false;
-          const eventStart = startOfDay(new Date(e.startDate));
-          const eventEnd = startOfDay(new Date(e.endDate));
-          return targetDate >= eventStart && targetDate <= eventEnd;
-        });
+          // Trouver TOUS les événements qui se chevauchent avec cette date pour ce membre
+          const overlappingEvents = events.filter((e) => {
+            if (e.memberId !== memberId) return false;
+            const eventStart = startOfDay(new Date(e.startDate));
+            const eventEnd = startOfDay(new Date(e.endDate));
+            return targetDate >= eventStart && targetDate <= eventEnd;
+          });
 
-        if (actionType === 'delete') {
-          if (event?.id) promises.push(fetch(`/api/events/${event.id}`, { method: 'DELETE' }));
-        } else {
-          if (event?.id) {
-            promises.push(fetch(`/api/events/${event.id}`, {
-              method: 'PATCH',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({ status: newStatus, note: note || event.note }),
-            }));
+          if (actionType === 'delete') {
+            // Supprimer tous les événements qui se chevauchent
+            overlappingEvents.forEach(event => {
+              if (event?.id) {
+                promises.push(
+                  fetch(`/api/events/${event.id}`, { method: 'DELETE' })
+                    .then(res => {
+                      if (!res.ok) throw new Error(`Échec suppression événement ${event.id}`);
+                      return res;
+                    })
+                );
+              }
+            });
           } else {
-            promises.push(fetch('/api/events', {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({
-                memberId,
-                startDate: date.toISOString(),
-                endDate: date.toISOString(),
-                status: newStatus,
-                note: note || null,
-                isImported: false,
-              }),
-            }));
+            // Si un événement existe déjà pour cette date exacte
+            if (overlappingEvents.length > 0) {
+              // Mettre à jour le premier événement trouvé
+              const event = overlappingEvents[0];
+              promises.push(
+                fetch(`/api/events/${event.id}`, {
+                  method: 'PATCH',
+                  headers: { 'Content-Type': 'application/json' },
+                  body: JSON.stringify({
+                    status: newStatus,
+                    note: note || event.note
+                  }),
+                }).then(res => {
+                  if (!res.ok) throw new Error(`Échec mise à jour événement ${event.id}`);
+                  return res;
+                })
+              );
+
+              // Supprimer les autres événements en double si plusieurs existent
+              if (overlappingEvents.length > 1) {
+                overlappingEvents.slice(1).forEach(dupEvent => {
+                  promises.push(
+                    fetch(`/api/events/${dupEvent.id}`, { method: 'DELETE' })
+                      .then(res => {
+                        if (!res.ok) throw new Error(`Échec suppression doublon ${dupEvent.id}`);
+                        return res;
+                      })
+                  );
+                });
+              }
+            } else {
+              // Créer un nouvel événement
+              promises.push(
+                fetch('/api/events', {
+                  method: 'POST',
+                  headers: { 'Content-Type': 'application/json' },
+                  body: JSON.stringify({
+                    memberId,
+                    startDate: date.toISOString(),
+                    endDate: date.toISOString(),
+                    status: newStatus,
+                    note: note || null,
+                    isImported: false,
+                  }),
+                }).then(res => {
+                  if (!res.ok) throw new Error(`Échec création événement pour ${dateStr}`);
+                  return res;
+                })
+              );
+            }
           }
+        } catch (dateError) {
+          errors.push(`Erreur pour ${dateStr}: ${dateError}`);
         }
       }
-      
-      await Promise.all(promises);
+
+      setLoadingMessage('Finalisation...');
+      const results = await Promise.allSettled(promises);
+      const failures = results.filter(r => r.status === 'rejected');
+
+      if (failures.length > 0) {
+        console.error('Certaines opérations ont échoué:', failures);
+        alert(`✅ ${results.length - failures.length} opération(s) réussie(s)\n❌ ${failures.length} opération(s) échouée(s)\n\nConsultez la console pour plus de détails.`);
+      } else {
+        setLoadingMessage(`✅ ${selectedDays.size} jour(s) traité(s) avec succès`);
+        await new Promise(resolve => setTimeout(resolve, 800)); // Pause pour afficher le message
+      }
+
+      if (errors.length > 0) {
+        console.error('Erreurs lors du traitement:', errors);
+      }
+
       onUpdate();
       onClose();
     } catch (error) {
-      alert('Erreur lors de l\'application');
+      console.error('Erreur lors de l\'application:', error);
+      alert('❌ Erreur lors de l\'application: ' + (error instanceof Error ? error.message : 'Erreur inconnue'));
     } finally {
       setIsLoading(false);
+      setLoadingMessage('');
     }
   };
 
@@ -282,8 +360,16 @@ export function DaySelectionModal({ memberId, memberName, initialDate, isOpen, o
                       <span className="text-xs sm:text-sm text-gray-500">{format(week.start, 'd MMM', { locale: fr })} - {format(addDays(week.start, 6), 'd MMM yyyy', { locale: fr })}</span>
                       {selectedInWeek > 0 && <Badge variant="info" className="text-xs w-fit">{selectedInWeek} sélectionné{selectedInWeek > 1 ? 's' : ''}</Badge>}
                     </div>
-                    <Button type="button" variant="ghost" size="sm" onClick={() => selectWorkWeek(week)} disabled={isLoading} className="text-xs self-start sm:self-auto">
-                      Lun-Ven
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => selectWorkWeek(week)}
+                      disabled={isLoading}
+                      className="text-xs self-start sm:self-auto"
+                      title="Sélectionner uniquement Lun-Ven (remplace la sélection actuelle)"
+                    >
+                      🔄 Lun-Ven
                     </Button>
                   </div>
                   <div className="grid grid-cols-3 sm:grid-cols-7 gap-1.5 sm:gap-2">
@@ -317,10 +403,46 @@ export function DaySelectionModal({ memberId, memberName, initialDate, isOpen, o
 
           {/* Actions sélection */}
           <div className="flex flex-col gap-3 border-t pt-3 sm:pt-4">
+            {/* Mode de sélection */}
+            <div className="flex items-center gap-2 p-2 bg-blue-50 rounded-lg border border-blue-200">
+              <span className="text-xs sm:text-sm font-medium text-blue-900">Mode de sélection:</span>
+              <div className="flex gap-1 flex-1">
+                <Button
+                  type="button"
+                  variant={selectionMode === 'replace' ? 'default' : 'outline'}
+                  size="sm"
+                  onClick={() => setSelectionMode('replace')}
+                  disabled={isLoading}
+                  className="flex-1 text-xs sm:text-sm"
+                >
+                  <Replace className="h-3 w-3 sm:h-4 sm:w-4 mr-1" />
+                  Remplacer
+                </Button>
+                <Button
+                  type="button"
+                  variant={selectionMode === 'add' ? 'default' : 'outline'}
+                  size="sm"
+                  onClick={() => setSelectionMode('add')}
+                  disabled={isLoading}
+                  className="flex-1 text-xs sm:text-sm"
+                >
+                  <Plus className="h-3 w-3 sm:h-4 sm:w-4 mr-1" />
+                  Ajouter
+                </Button>
+              </div>
+            </div>
             <div className="flex flex-col sm:flex-row gap-2 sm:items-center justify-between">
               <div className="flex flex-wrap gap-2 items-center">
-                <Button type="button" variant="outline" size="sm" onClick={selectAll} disabled={isLoading} className="text-xs">
-                  Tout ({weeks.length} sem.)
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={selectAll}
+                  disabled={isLoading}
+                  className="text-xs"
+                  title="Sélectionner tous les jours du mois affiché"
+                >
+                  🔄 Tout ({weeks.length} sem.)
                 </Button>
                 <div className="flex items-center gap-1 border rounded-md bg-white flex-1 sm:flex-none">
                   <select value={selectedYear} onChange={(e) => setSelectedYear(Number(e.target.value))} disabled={isLoading} className="px-2 py-1 text-xs sm:text-sm border-0 bg-transparent outline-none">
@@ -343,6 +465,25 @@ export function DaySelectionModal({ memberId, memberName, initialDate, isOpen, o
             {weekSelectionSummary.length > 0 && (
               <div className="text-xs text-gray-600 space-y-0.5 bg-blue-50 p-2 rounded">
                 {weekSelectionSummary.map(w => <div key={w.number}>• Semaine {w.number}: {w.count} jour{w.count > 1 ? 's' : ''}</div>)}
+              </div>
+            )}
+            {selectedDays.size > 0 && (
+              <div className="text-xs text-gray-600 bg-green-50 p-2 rounded border border-green-200">
+                <div className="font-semibold text-green-800 mb-1">📅 Prévisualisation de la sélection :</div>
+                <div className="flex flex-wrap gap-1">
+                  {Array.from(selectedDays)
+                    .sort()
+                    .map(dateStr => {
+                      const date = new Date(dateStr + 'T12:00:00Z');
+                      const dayName = format(date, 'EEE', { locale: fr });
+                      const dayDate = format(date, 'dd/MM', { locale: fr });
+                      return (
+                        <span key={dateStr} className="inline-block bg-white px-2 py-0.5 rounded border border-green-300 text-green-800 font-medium">
+                          {dayName} {dayDate}
+                        </span>
+                      );
+                    })}
+                </div>
               </div>
             )}
           </div>
@@ -449,12 +590,21 @@ export function DaySelectionModal({ memberId, memberName, initialDate, isOpen, o
 
         {/* Footer */}
         <div className="flex flex-col-reverse sm:flex-row items-stretch sm:items-center justify-end gap-2 sm:gap-3 p-3 sm:p-6 border-t bg-gray-50">
+          {isLoading && loadingMessage && (
+            <div className="flex items-center gap-2 text-sm text-blue-600 mr-auto">
+              <Loader2 className="h-4 w-4 animate-spin" />
+              <span>{loadingMessage}</span>
+            </div>
+          )}
           <Button type="button" variant="outline" onClick={onClose} disabled={isLoading} className="w-full sm:w-auto">
             Annuler
           </Button>
           <Button type="button" onClick={handleApply} disabled={isLoading || selectedDays.size === 0} className="flex items-center justify-center gap-2 w-full sm:w-auto">
-            {actionType === 'delete' ? <><Trash2 className="h-4 w-4" /> Supprimer</> : <><Save className="h-4 w-4" /> Appliquer</>}
-            {isLoading && '...'}
+            {isLoading ? (
+              <><Loader2 className="h-4 w-4 animate-spin" /> Traitement...</>
+            ) : (
+              actionType === 'delete' ? <><Trash2 className="h-4 w-4" /> Supprimer</> : <><Save className="h-4 w-4" /> Appliquer</>
+            )}
           </Button>
         </div>
       </div>
